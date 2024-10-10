@@ -1,4 +1,4 @@
-package RestApiTodolist
+package todo
 
 import (
 	"context"

@@ -1,8 +1,14 @@
 package service
 
-import "ResTApiTodolist/pkg/repository"
+import (
+	todo "ResTApiTodolist"
+	"ResTApiTodolist/pkg/repository"
+)
 
-type Authorization struct {
+type Authorization interface {
+	CreateUser(user todo.User) (int, error)
+	GenerateToken(username, password string) (string, error)
+	ParseToken(token string) (int, error)
 }
 
 type TodoList struct {
@@ -18,5 +24,7 @@ type Service struct {
 }
 
 func NewService(repos *repository.Repository) *Service {
-	return &Service{}
+	return &Service{
+		Authorization: NewAuthService(repos.Authorization),
+	}
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"log"
 	"os"
 
 	_ "github.com/lib/pq"
@@ -16,8 +15,10 @@ import (
 
 func main() {
 
+	logrus.SetFormatter(new(logrus.JSONFormatter))
+
 	if err := initConfig(); err != nil {
-		log.Fatalf("error initial config: %v", err.Error())
+		logrus.Fatalf("error initial config: %v", err.Error())
 	}
 
 	if err := godotenv.Load(); err != nil {
@@ -34,7 +35,7 @@ func main() {
 	})
 
 	if err != nil {
-		log.Fatalf("error initial db: %v", err.Error())
+		logrus.Fatalf("error initial db: %v", err.Error())
 	}
 
 	repos := repository.NewRepository(db)
@@ -42,7 +43,7 @@ func main() {
 	handlers := handler.NewHandler(services)
 	srv := new(RestApiTodolist.Server)
 	if err := srv.Run(viper.GetString("port"), handlers.InitRoutes()); err != nil {
-		log.Fatalf("error occured while runing http server: %s", err.Error())
+		logrus.Fatalf("error occured while runing http server: %s", err.Error())
 	}
 }
 

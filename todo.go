@@ -1,7 +1,7 @@
-package RestApiTodolist
+package todo
 
 type TodoList struct {
-	Id          int    `json:"id"`
+	Id          int    `json:"-" db:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 }
