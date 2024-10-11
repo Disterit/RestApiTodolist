@@ -4,6 +4,7 @@ import (
 	todo "ResTApiTodolist"
 	"ResTApiTodolist/pkg/repository"
 	"crypto/sha1"
+	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"time"
@@ -47,7 +48,7 @@ func (s *AuthService) GenerateToken(username, password string) (string, error) {
 		user.ID,
 	})
 
-	return token.SignedString([]byte(salt))
+	return token.SignedString([]byte(singInKey))
 }
 
 func (s *AuthService) ParseToken(accessToken string) (int, error) {
@@ -63,12 +64,17 @@ func (s *AuthService) ParseToken(accessToken string) (int, error) {
 		return 0, err
 	}
 
-	token.Claims.(*tokenClaims).Issuer = "ResT"
+	claims, ok := token.Claims.(*tokenClaims)
+	if !ok {
+		return 0, errors.New("Invalid token")
+	}
+
+	return claims.UserId, nil
 }
 
 func generatePasswordHash(password string) string {
 	hash := sha1.New()
 	hash.Write([]byte(password))
 
-	return fmt.Sprintf("%x", hash.Sum([]byte(singInKey)))
+	return fmt.Sprintf("%x", hash.Sum([]byte(salt)))
 }
