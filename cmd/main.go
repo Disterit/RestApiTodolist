@@ -5,12 +5,14 @@ import (
 	"ResTApiTodolist/pkg/handler"
 	"ResTApiTodolist/pkg/repository"
 	"ResTApiTodolist/pkg/service"
+	"context"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"
-
-	_ "github.com/lib/pq"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -43,8 +45,25 @@ func main() {
 	handlers := handler.NewHandler(services)
 	srv := new(RestApiTodolist.Server)
 
-	if err := srv.Run(viper.GetString("port"), handlers.InitRoutes()); err != nil {
-		logrus.Fatalf("error occured while runing http server: %s", err.Error())
+	go func() {
+		if err := srv.Run(viper.GetString("port"), handlers.InitRoutes()); err != nil {
+			logrus.Fatalf("error occured while runing http server: %s", err.Error())
+		}
+	}()
+
+	logrus.Print("TodoApp Started")
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+	<-quit
+
+	logrus.Print("TodoApp Shutting Down")
+
+	if err := srv.Shutdown(context.Background()); err != nil {
+		logrus.Fatalf("error occured while shutting down http server: %s", err.Error())
+	}
+	if err := db.Close(); err != nil {
+		logrus.Fatalf("error occured while closing db: %v", err.Error())
 	}
 }
 
