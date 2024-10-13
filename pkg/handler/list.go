@@ -31,7 +31,7 @@ func (h *Handler) createList(c *gin.Context) {
 }
 
 type getAllListResponse struct {
-	Data []todo.TodoList `json:"data""`
+	Data []todo.TodoList `json:"data"`
 }
 
 func (h *Handler) getAllLists(c *gin.Context) {
